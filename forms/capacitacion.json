@@ -1,0 +1,16 @@
+{
+  "titulo": "Encuesta de Capacitación",
+  "identificador_unico": "Correo",
+  "activo": true,
+  "descripcion": "Capacitacion para comisarias del DISTRITO CENTRAL. de 9:00 am a 11:00 am",
+  "campos": [
+    {"nombre": "Nombre", "tipo": "text", "obligatorio": true, "placeholder": "Ejemplo: Juan Perez"},
+    {"nombre": "Correo", "tipo": "email", "obligatorio": true, "placeholder": "Ejemplo: juanperez@gmail.com"},
+    {"nombre": "Nip", "tipo": "number", "obligatorio": true, "longitud": 5, "placeholder": "Ejemplo: 34345"},
+    {"nombre": "Teléfono", "tipo": "number", "obligatorio": true, "longitud": 8, "placeholder": "solo acepta 8 digitos"},
+    {"nombre": "Área de interés", "tipo": "select", "opciones": ["Informática", "Finanzas", "Recursos Humanos"], "obligatorio": true},
+    {"nombre": "Nivel de conocimiento", "tipo": "checkbox", "opciones": ["ninguno", "Básico", "Intermedio", "Avanzado"], "obligatorio": true, "multiple": false},
+    {"nombre": "Asistirá a la capacitación", "tipo": "radio", "opciones": ["Si", "No"], "obligatorio": true},
+    {"nombre": "Comentarios adicionales", "tipo": "textarea"}
+  ]
+}

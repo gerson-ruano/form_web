@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h2 class="text-4xl text-center text-green-500 font-bold mb-4">Formularios activos</h2>
+
+{% if formularios %}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {% for form in formularios %}
+            <a href="{{ url_for('formulario', nombre=form.nombre, descripcion=form.descripcion) }}"
+               class="bg-blue-400 text-gray-700 rounded-xl border border-blue-600 p-4 rounded shadow hover:shadow-lg hover:bg-blue-500 hover:text-black transition flex flex-col justify-between">
+                <h3 class="font-semibold text-lg text-center">{{ form.titulo }}</h3>
+                <span class="text-gray-600 mt-2">*{{ form.nombre }}*</span>
+                <span class="text-gray-600 mt-2">{{ form.descripcion }}</span>
+            </a>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="text-gray-600">No hay formularios activos disponibles.</p>
+{% endif %}
+{% endblock %}

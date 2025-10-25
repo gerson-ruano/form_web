@@ -1,0 +1,14 @@
+{
+  "titulo": "Registro de Capacitación para Comisarias",
+  "identificador_unico": "Nip",
+  "activo": true,
+  "descripcion": "capacitaciones.",
+  "campos": [
+    {"nombre": "Nombre", "tipo": "text", "obligatorio": true},
+    {"nombre": "Nip", "tipo": "number", "obligatorio": true, "longitud": 5},
+    {"nombre": "Teléfono", "tipo": "number", "obligatorio": true, "longitud": 8},
+    {"nombre": "Rol", "tipo": "select", "opciones": ["Operador", "Jefe de servicios", "Analista"], "obligatorio": true},
+    {"nombre": "Puesto", "tipo": "select", "opciones": ["Agente", "Subinspector", "Inspector"], "obligatorio": true},
+    {"nombre": "Tiene usuario RAP", "tipo": "radio", "opciones": ["Sí", "No"], "obligatorio": true}
+  ]
+}

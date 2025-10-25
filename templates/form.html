@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block contenido %}
+
+<div class="max-w-lg mx-auto bg-white p-8 mt-10 shadow-md rounded-xl">
+    <h1 class="text-3xl font-bold mb-4 text-center">{{ config.titulo }}</h1>
+    {% if config.get("descripcion") %}
+        <p class="text-gray-600 mb-6">{{ config.descripcion }}</p>
+    {% endif %}
+
+    <!-- Mensajes flash generales (como duplicados) -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="mb-4">
+                <div class="flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow">
+                    <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.676-1.36 3.441 0l5.516 9.828c.75 1.336-.213 2.973-1.72 2.973H4.462c-1.507 0-2.47-1.637-1.72-2.973l5.516-9.828zM11 13a1 1 0 10-2 0 1 1 0 002 0zm-1-2a.75.75 0 01-.75-.75V7a.75.75 0 011.5 0v3.25A.75.75 0 0110 11z" clip-rule="evenodd" />
+                    </svg>
+                    <div>
+                        <span class="font-semibold">Error</span>
+                        <div class="mt-1 text-sm">
+                            {% for category, msg in messages %}
+                                <div>{{ msg }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+        {% for campo in config.campos %}
+            {% set nombre_campo = campo.nombre %}
+            <div class="mb-4">
+                <label class="block font-medium mb-1">
+                    {{ campo.nombre }}
+                    {% if campo.obligatorio %} 
+                        <span class="text-red-500">*</span> 
+                    {% endif %}
+                </label>
+
+                {% set valor = datos[nombre_campo] if datos and nombre_campo in datos else '' %}
+                {% set tiene_error = errores and nombre_campo in errores %}
+
+                <!-- Mostrar error específico del campo -->
+                {% if tiene_error %}
+                    <div class="text-red-500 text-sm mb-2 flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        {{ errores[nombre_campo] }}
+                    </div>
+                {% endif %}
+
+                {% if campo.tipo in ['text', 'email', 'number'] %}
+                    <input type="{{ campo.tipo }}" 
+                           name="{{ nombre_campo }}" 
+                           placeholder="{{ campo.get('placeholder', '') }}"
+                           class="w-full px-3 py-2 border {% if tiene_error %}border-red-500{% else %}border-gray-300{% endif %} rounded-md focus:outline-none focus:ring-1 {% if tiene_error %}focus:ring-red-500{% else %}focus:ring-blue-500{% endif %} bg-white text-gray-700 text-sm" 
+                           value="{{ valor }}">
+
+                {% elif campo.tipo == "textarea" %}
+                    <textarea name="{{ nombre_campo }}" 
+                              rows="4" 
+                              class="w-full px-3 py-2 border {% if tiene_error %}border-red-500{% else %}border-gray-300{% endif %} rounded-md focus:outline-none focus:ring-1 {% if tiene_error %}focus:ring-red-500{% else %}focus:ring-blue-500{% endif %} bg-white text-gray-700 text-sm"
+                              placeholder="{{ campo.get('placeholder', '') }}">{{ valor }}</textarea>
+
+                {% elif campo.tipo == "select" %}
+                    <select name="{{ nombre_campo }}" 
+                            class="w-full px-3 py-2 border {% if tiene_error %}border-red-500{% else %}border-gray-300{% endif %} rounded-md focus:outline-none focus:ring-1 {% if tiene_error %}focus:ring-red-500{% else %}focus:ring-blue-500{% endif %} bg-white text-gray-700 text-sm">
+                        <option value="">Seleccionar</option>
+                        {% for opcion in campo.opciones %}
+                            <option value="{{ opcion }}" {% if valor == opcion %}selected{% endif %}>{{ opcion }}</option>
+                        {% endfor %}
+                    </select>
+
+                {% elif campo.tipo == "checkbox" %}
+                    {% set valores = valor if valor is iterable and valor is not string else [valor] %}
+                    <div class="flex flex-wrap justify-center gap-8">
+                        {% for opcion in campo.opciones %}
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" 
+                                   name="{{ nombre_campo }}"
+                                   value="{{ opcion }}"
+                                   {% if opcion in valores %}checked{% endif %}
+                                   {% if not campo.get("multiple", True) %}
+                                       onclick="document.querySelectorAll('input[name=\'{{ nombre_campo }}\']').forEach(cb => { if(cb !== this) cb.checked=false })"
+                                   {% endif %}>
+                            <span class="ml-2">{{ opcion }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+
+                {% elif campo.tipo == "radio" %}
+                    <div class="flex flex-wrap justify-center gap-14">
+                        {% for opcion in campo.opciones %}
+                            <label class="inline-flex items-center">
+                                <input type="radio" 
+                                       name="{{ nombre_campo }}" 
+                                       value="{{ opcion }}"
+                                       {% if valor == opcion %}checked{% endif %}>
+                                <span class="ml-2">{{ opcion }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+        
+        <button type="submit" class="bg-blue-500 text-white px-10 rounded-xl py-2 hover:bg-blue-600">Enviar</button>  
+    </form>
+</div>
+{% endblock %}
