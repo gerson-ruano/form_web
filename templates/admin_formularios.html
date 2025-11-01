@@ -1,0 +1,640 @@
+{% extends "base.html" %}
+{% block contenido %}
+
+<style>
+/* Asegurar que el scroll funcione correctamente */
+#modalEditar .overflow-y-auto {
+    min-height: 0;
+    flex: 1 1 auto;
+}
+
+/* Estilos opcionales para la barra de scroll */
+#modalEditar .overflow-y-auto::-webkit-scrollbar {
+    width: 8px;
+}
+
+#modalEditar .overflow-y-auto::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+#modalEditar .overflow-y-auto::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+#modalEditar .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+</style>
+
+<div class="max-w-6xl mx-auto bg-white p-8 mt-2 shadow-md rounded-xl">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold">Administración de Formularios</h1>
+        <button onclick="abrirModalNuevo()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Nuevo Formulario
+        </button>
+    </div>
+
+    <!-- Tabla de formularios -->
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border border-gray-200">
+            <thead>
+                <tr class="bg-gray-50">
+                    <th class="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">Nombre</th>
+                    <th class="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">Título</th>
+                    <th class="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">Estado</th>
+                    <th class="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">Campos</th>
+                    <th class="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for form in formularios %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 border-b text-sm font-medium">{{ form.nombre }}</td>
+                    <td class="px-6 py-4 border-b text-sm">{{ form.titulo }}</td>
+                    <td class="px-6 py-4 border-b text-sm">
+                        <span class="px-2 py-1 text-xs rounded-full {% if form.activo %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                            {{ 'Activo' if form.activo else 'Inactivo' }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 border-b text-sm">
+                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                            {{ form.campos }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 border-b text-sm">
+                        <div class="flex flex-col sm:flex-row gap-1 sm:gap-2">
+                            <button onclick="editarFormulario('{{ form.nombre }}')" 
+                                    class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 sm:w-auto w-full text-center">
+                                Editar
+                            </button>
+                            <button onclick="eliminarFormulario('{{ form.nombre }}')" 
+                                    class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 sm:w-auto w-full text-center">
+                                Eliminar
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal para editar formulario -->
+<div id="modalEditar" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+        <!-- Header -->
+        <div class="flex justify-between items-center p-4 border-b bg-white">
+            <h3 class="text-xl font-bold" id="modalTitulo">Editar Formulario</h3>
+            <button onclick="cerrarModal()" class="text-gray-500 hover:text-gray-700">
+                ✕
+            </button>
+        </div>
+        
+        <!-- Contenido con altura fija y scroll -->
+        <div class="flex-1 overflow-y-auto" style="max-height: calc(90vh - 120px);">
+            <div class="p-4">
+                <div id="editorVisual" class="space-y-4">
+                    <!-- Aquí se cargará el editor visual -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="p-4 border-t bg-gray-50">
+            <div class="flex justify-between items-center">
+                <button onclick="cerrarModal()" class="bg-gray-300 px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded">Cancelar</button>
+                <div class="space-x-2">
+                    <button onclick="agregarCampo()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Agregar Campo</button>
+                    <button onclick="guardarCambiosVisual()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para nuevo formulario -->
+<div id="modalNuevo" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <h3 class="text-xl font-bold mb-4">Nuevo Formulario</h3>
+        <form id="formNuevo">
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1">Nombre del formulario:</label>
+                <input type="text" id="nombreFormulario" class="w-full px-3 py-2 border border-gray-300 rounded-md" required>
+                <p class="text-xs text-gray-500 mt-1">Este nombre se usará para el archivo</p>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1">Título:</label>
+                <input type="text" id="tituloFormulario" class="w-full px-3 py-2 border border-gray-300 rounded-md" required>
+                <p class="text-xs text-gray-500 mt-1">Título que verán los usuarios</p>
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button type="button" onclick="cerrarModalNuevo()" class="bg-gray-300 px-4 py-2 text-gray-600 hover:text-gray-800">Cancelar</button>
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Crear</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal de Notificación -->
+<div id="modalNotificacion" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg max-w-md w-full mx-auto">
+        <div class="p-6">
+            <div class="flex items-center justify-center mb-4" id="notificacionIcono">
+                <!-- Icono se llenará dinámicamente -->
+            </div>
+            <h3 class="text-xl font-bold text-center mb-2" id="notificacionTitulo">Título</h3>
+            <p class="text-gray-600 text-center" id="notificacionMensaje">Mensaje</p>
+        </div>
+        <div class="p-4 border-t bg-gray-50 flex justify-center">
+            <button onclick="cerrarNotificacion()" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
+                Aceptar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación Eliminación -->
+<div id="modalConfirmarEliminar" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg max-w-md w-full mx-auto">
+        <div class="p-6">
+            <div class="flex items-center justify-center mb-4">
+                <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-center mb-2" id="confirmarEliminarTitulo">Confirmar Eliminación</h3>
+            <p class="text-gray-600 text-center" id="confirmarEliminarMensaje">¿Estás seguro de que quieres eliminar este formulario?</p>
+        </div>
+        <div class="p-4 border-t bg-gray-50 flex justify-center space-x-3">
+            <button onclick="cerrarConfirmarEliminar()" class="bg-gray-300 px-6 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded">
+                Cancelar
+            </button>
+            <button onclick="procesarEliminacion()" class="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600">
+                Sí, Eliminar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Variables globales
+let formularioActual = '';
+let configActual = {};
+let campoCounter = 0;
+
+// Modal functions
+function abrirModalEditar() {
+    document.getElementById('modalEditar').classList.remove('hidden');
+    document.getElementById('modalEditar').classList.add('flex');
+}
+
+function cerrarModal() {
+    document.getElementById('modalEditar').classList.add('hidden');
+    document.getElementById('modalEditar').classList.remove('flex');
+}
+
+function abrirModalNuevo() {
+    document.getElementById('modalNuevo').classList.remove('hidden');
+    document.getElementById('modalNuevo').classList.add('flex');
+}
+
+function cerrarModalNuevo() {
+    document.getElementById('modalNuevo').classList.add('hidden');
+    document.getElementById('modalNuevo').classList.remove('flex');
+}
+
+// Función para mostrar notificación modal
+function mostrarNotificacion(titulo, mensaje, tipo = 'success') {
+    const modal = document.getElementById('modalNotificacion');
+    const icono = document.getElementById('notificacionIcono');
+    const tituloElem = document.getElementById('notificacionTitulo');
+    const mensajeElem = document.getElementById('notificacionMensaje');
+    
+    // Configurar según el tipo
+    let iconoSVG = '';
+    
+    switch(tipo) {
+        case 'success':
+            iconoSVG = `
+                <svg class="w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            `;
+            break;
+        case 'error':
+            iconoSVG = `
+                <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            `;
+            break;
+        default:
+            iconoSVG = `
+                <svg class="w-12 h-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            `;
+    }
+    
+    icono.innerHTML = iconoSVG;
+    tituloElem.textContent = titulo;
+    mensajeElem.textContent = mensaje;
+    
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+// Función para cerrar notificación
+function cerrarNotificacion() {
+    const modal = document.getElementById('modalNotificacion');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
+// Cerrar modal al hacer click fuera
+document.getElementById('modalNotificacion').addEventListener('click', function(e) {
+    if (e.target === this) {
+        cerrarNotificacion();
+    }
+});
+
+// Cargar y editar formulario visualmente
+async function editarFormulario(nombre) {
+    formularioActual = nombre;
+    
+    try {
+        console.log('Cargando formulario:', nombre);
+        const response = await fetch(`/admin/formulario/${nombre}`);
+        
+        // Verificar si la respuesta es exitosa
+        if (!response.ok) {
+            throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+        
+        // Verificar que el contenido sea JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            console.error('Respuesta no JSON:', text.substring(0, 200));
+            throw new Error('La respuesta del servidor no es JSON válido');
+        }
+        
+        configActual = await response.json();
+        
+        // Verificar si la respuesta es un error
+        if (configActual.success === false) {
+            throw new Error(configActual.error || 'Error desconocido');
+        }
+        
+        console.log('Formulario cargado:', configActual);
+        document.getElementById('modalTitulo').textContent = `Editar: ${configActual.titulo}`;
+        renderizarEditorVisual();
+        abrirModalEditar();
+        
+    } catch (error) {
+        console.error('Error al cargar formulario:', error);
+        mostrarNotificacion('Error', `Error al cargar el formulario: ${error.message}`, 'error');
+    }
+}
+
+function renderizarEditorVisual() {
+    const editor = document.getElementById('editorVisual');
+    
+    editor.innerHTML = `
+        <!-- Configuración General -->
+        <div class="bg-white border border-gray-200 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3 text-lg">Configuración General</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Título del Formulario *</label>
+                    <input type="text" id="configTitulo" value="${configActual.titulo || ''}" class="w-full px-3 py-2 border border-gray-300 rounded text-sm" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Descripción</label>
+                    <textarea id="configDescripcion" class="w-full px-3 py-2 border border-gray-300 rounded text-sm" rows="2" placeholder="Descripción que verán los usuarios">${configActual.descripcion || ''}</textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Campo Identificador Único</label>
+                    <input type="text" id="configIdentificador" value="${configActual.identificador_unico || ''}" class="w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Ej: email, nip, id">
+                    <p class="text-xs text-gray-500 mt-1">Para evitar duplicados (opcional)</p>
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="configActivo" ${configActual.activo !== false ? 'checked' : ''} class="mr-2">
+                    <label class="text-sm font-medium">Formulario Activo</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Campos del Formulario -->
+        <div class="bg-white border border-gray-200 p-4 rounded-lg">
+            <div class="flex justify-between items-center mb-4">
+                <h4 class="font-semibold text-lg">Campos del Formulario</h4>
+                <span class="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">${configActual.campos ? configActual.campos.length : 0} campos</span>
+            </div>
+            <div id="listaCampos" class="space-y-3">
+                ${renderizarCampos()}
+            </div>
+        </div>
+    `;
+}
+
+function renderizarCampos() {
+    if (!configActual.campos || configActual.campos.length === 0) {
+        return `
+            <div class="text-center py-6 border-2 border-dashed border-gray-300 rounded-lg">
+                <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <p class="text-gray-500 mb-2">No hay campos definidos</p>
+                <p class="text-sm text-gray-400">Agrega el primer campo usando el botón "Agregar Campo"</p>
+            </div>
+        `;
+    }
+    
+    campoCounter = 0;
+    return configActual.campos.map(campo => {
+        campoCounter++;
+        return `
+            <div class="border border-gray-300 rounded-lg p-3 bg-white shadow-sm" data-campo-id="${campoCounter}">
+                <div class="flex justify-between items-center mb-3">
+                    <h5 class="font-medium text-gray-800">${campo.nombre || 'Nuevo Campo'} 
+                        <span class="text-xs font-normal text-gray-500 ml-2">${campo.tipo || 'text'}</span>
+                        ${campo.obligatorio ? '<span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded ml-2">Obligatorio</span>' : ''}
+                    </h5>
+                    <button onclick="eliminarCampo(${campoCounter})" class="text-red-500 hover:text-red-700 p-1" title="Eliminar campo">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium mb-1 text-gray-700">Nombre del Campo *</label>
+                        <input type="text" value="${campo.nombre || ''}" onchange="actualizarCampo(${campoCounter}, 'nombre', this.value)" 
+                               class="w-full px-2 py-1 border border-gray-300 rounded text-sm" placeholder="Ej: Nombre completo" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1 text-gray-700">Tipo *</label>
+                        <select onchange="actualizarCampo(${campoCounter}, 'tipo', this.value)" class="w-full px-2 py-1 border border-gray-300 rounded text-sm">
+                            <option value="text" ${campo.tipo === 'text' ? 'selected' : ''}>Texto</option>
+                            <option value="email" ${campo.tipo === 'email' ? 'selected' : ''}>Email</option>
+                            <option value="number" ${campo.tipo === 'number' ? 'selected' : ''}>Número</option>
+                            <option value="textarea" ${campo.tipo === 'textarea' ? 'selected' : ''}>Área de Texto</option>
+                            <option value="select" ${campo.tipo === 'select' ? 'selected' : ''}>Lista Desplegable</option>
+                            <option value="checkbox" ${campo.tipo === 'checkbox' ? 'selected' : ''}>Casillas</option>
+                            <option value="radio" ${campo.tipo === 'radio' ? 'selected' : ''}>Botones Radio</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" ${campo.obligatorio ? 'checked' : ''} onchange="actualizarCampo(${campoCounter}, 'obligatorio', this.checked)" class="mr-2">
+                        <label class="text-xs font-medium text-gray-700">Campo Obligatorio</label>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1 text-gray-700">Placeholder</label>
+                        <input type="text" value="${campo.placeholder || ''}" onchange="actualizarCampo(${campoCounter}, 'placeholder', this.value)" 
+                               class="w-full px-2 py-1 border border-gray-300 rounded text-sm" placeholder="Texto de ejemplo">
+                    </div>
+                    ${campo.tipo === 'select' || campo.tipo === 'checkbox' || campo.tipo === 'radio' ? `
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-medium mb-1 text-gray-700">Opciones (una por línea) *</label>
+                        <textarea onchange="actualizarOpciones(${campoCounter}, this.value)" 
+                                  class="w-full px-2 py-1 border border-gray-300 rounded text-sm" 
+                                  rows="3" 
+                                  placeholder="Opción 1&#10;Opción 2&#10;Opción 3">${Array.isArray(campo.opciones) ? campo.opciones.join('\n') : ''}</textarea>
+                    </div>
+                    ` : ''}
+                    ${campo.tipo === 'checkbox' ? `
+                    <div class="flex items-center md:col-span-2">
+                        <input type="checkbox" ${campo.multiple !== false ? 'checked' : ''} onchange="actualizarCampo(${campoCounter}, 'multiple', this.checked)" class="mr-2">
+                        <label class="text-xs font-medium text-gray-700">Permitir selección múltiple</label>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function actualizarCampo(id, propiedad, valor) {
+    const campoIndex = id - 1;
+    if (!configActual.campos[campoIndex]) return;
+    
+    configActual.campos[campoIndex][propiedad] = valor;
+    
+    // Si cambia el tipo, limpiar propiedades innecesarias
+    if (propiedad === 'tipo') {
+        const campo = configActual.campos[campoIndex];
+        if (valor !== 'select' && valor !== 'checkbox' && valor !== 'radio') {
+            delete campo.opciones;
+            delete campo.multiple;
+        }
+        if (valor !== 'checkbox') {
+            delete campo.multiple;
+        }
+    }
+    
+    // Actualizar visualización del nombre en el header del campo
+    const campoElement = document.querySelector(`[data-campo-id="${id}"] h5`);
+    if (propiedad === 'nombre' && campoElement) {
+        campoElement.textContent = `${valor} (${configActual.campos[campoIndex].tipo})`;
+    } else if (propiedad === 'tipo' && campoElement) {
+        const nombre = configActual.campos[campoIndex].nombre || 'Nuevo Campo';
+        campoElement.textContent = `${nombre} (${valor})`;
+    }
+}
+
+function actualizarOpciones(id, texto) {
+    const campoIndex = id - 1;
+    if (!configActual.campos[campoIndex]) return;
+    
+    const opciones = texto.split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0);
+    
+    configActual.campos[campoIndex].opciones = opciones;
+}
+
+function agregarCampo() {
+    if (!configActual.campos) {
+        configActual.campos = [];
+    }
+    
+    const nuevoCampo = {
+        nombre: `Campo ${configActual.campos.length + 1}`,
+        tipo: 'text',
+        obligatorio: false
+    };
+    
+    configActual.campos.push(nuevoCampo);
+    renderizarEditorVisual();
+}
+
+function eliminarCampo(id) {
+    const campoIndex = id - 1;
+    if (configActual.campos && configActual.campos[campoIndex]) {
+        configActual.campos.splice(campoIndex, 1);
+        renderizarEditorVisual();
+    }
+}
+
+// Guardar cambios visualmente
+async function guardarCambiosVisual() {
+    try {
+        // Actualizar configuración general
+        configActual.titulo = document.getElementById('configTitulo').value;
+        configActual.descripcion = document.getElementById('configDescripcion').value;
+        configActual.identificador_unico = document.getElementById('configIdentificador').value || undefined;
+        configActual.activo = document.getElementById('configActivo').checked;
+        
+        const response = await fetch(`/admin/formulario/${formularioActual}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(configActual)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            mostrarNotificacion('Éxito', 'Formulario actualizado correctamente', 'success');
+            cerrarModal();
+            location.reload();
+        } else {
+            mostrarNotificacion('Error', result.error, 'error');
+        }
+    } catch (error) {
+        mostrarNotificacion('Error', 'Error al guardar: ' + error.message, 'error');
+    }
+}
+
+// Variables para la eliminación
+let formularioAEliminar = '';
+
+// Modal de confirmación eliminación
+function abrirConfirmarEliminar(nombre, titulo) {
+    formularioAEliminar = nombre;
+    const tituloElem = document.getElementById('confirmarEliminarTitulo');
+    const mensajeElem = document.getElementById('confirmarEliminarMensaje');
+    
+    tituloElem.textContent = `Confirmar Eliminación`;
+    mensajeElem.textContent = `¿Estás seguro de que quieres eliminar el formulario "${titulo || nombre}"?`;
+    
+    document.getElementById('modalConfirmarEliminar').classList.remove('hidden');
+    document.getElementById('modalConfirmarEliminar').classList.add('flex');
+}
+
+function cerrarConfirmarEliminar() {
+    formularioAEliminar = '';
+    document.getElementById('modalConfirmarEliminar').classList.add('hidden');
+    document.getElementById('modalConfirmarEliminar').classList.remove('flex');
+}
+
+// Cerrar modal al hacer click fuera
+document.getElementById('modalConfirmarEliminar').addEventListener('click', function(e) {
+    if (e.target === this) {
+        cerrarConfirmarEliminar();
+    }
+});
+
+// Procesar la eliminación después de la confirmación
+async function procesarEliminacion() {
+    if (!formularioAEliminar) return;
+    
+    try {
+        const response = await fetch(`/admin/formulario/${formularioAEliminar}/eliminar`, {
+            method: 'POST'
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            mostrarNotificacion('Éxito', 'Formulario eliminado correctamente', 'success');
+            cerrarConfirmarEliminar();
+            location.reload();
+        } else {
+            mostrarNotificacion('Error', result.error, 'error');
+            cerrarConfirmarEliminar();
+        }
+    } catch (error) {
+        mostrarNotificacion('Error', 'Error: ' + error.message, 'error');
+        cerrarConfirmarEliminar();
+    }
+}
+
+// Nuevo formulario
+document.getElementById('formNuevo').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const nombre = document.getElementById('nombreFormulario').value;
+    const titulo = document.getElementById('tituloFormulario').value || nombre;
+    
+    console.log('Enviando datos:', { nombre, titulo }); // Debug
+    
+    try {
+        const response = await fetch('/admin/formulario/nuevo', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ nombre, titulo })
+        });
+        
+        console.log('Respuesta status:', response.status); // Debug
+        console.log('Respuesta ok:', response.ok); // Debug
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error response:', errorText); // Debug
+            throw new Error(`Error ${response.status}: ${response.statusText}. Detalles: ${errorText}`);
+        }
+        
+        const result = await response.json();
+        console.log('Resultado:', result); // Debug
+        
+        if (result.success) {
+            mostrarNotificacion('Éxito', 'Formulario creado correctamente', 'success');
+            cerrarModalNuevo();
+            location.reload();
+        } else {
+            mostrarNotificacion('Error', result.error, 'error');
+        }
+    } catch (error) {
+        console.error('Error completo:', error); // Debug
+        mostrarNotificacion('Error', 'Error: ' + error.message, 'error');
+    }
+});
+
+// Eliminar formulario - Ahora abre modal de confirmación
+function eliminarFormulario(nombre) {
+    // Buscar el título del formulario para mostrarlo en la confirmación
+    const formulario = Array.from(document.querySelectorAll('tbody tr')).find(tr => {
+        const nombreCelda = tr.querySelector('td:first-child').textContent.trim();
+        return nombreCelda === nombre;
+    });
+    
+    let titulo = nombre;
+    if (formulario) {
+        const tituloCelda = formulario.querySelector('td:nth-child(2)').textContent.trim();
+        titulo = tituloCelda || nombre;
+    }
+    
+    abrirConfirmarEliminar(nombre, titulo);
+}
+</script>
+
+{% endblock %}

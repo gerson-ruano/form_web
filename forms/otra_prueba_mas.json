@@ -1,0 +1,59 @@
+{
+  "activo": true,
+  "campos": [
+    {
+      "nombre": "nip",
+      "obligatorio": true,
+      "tipo": "number"
+    },
+    {
+      "nombre": "nombre",
+      "obligatorio": true,
+      "tipo": "text"
+    },
+    {
+      "nombre": "apellido",
+      "obligatorio": true,
+      "tipo": "text"
+    },
+    {
+      "nombre": "opciones",
+      "obligatorio": true,
+      "opciones": [
+        "opcion 1",
+        "opcion 2",
+        "opcion 3"
+      ],
+      "placeholder": "agregar",
+      "tipo": "radio"
+    },
+    {
+      "nombre": "seleccion",
+      "obligatorio": false,
+      "opciones": [
+        "sel  1",
+        "sel 2",
+        "sel 3"
+      ],
+      "tipo": "select"
+    },
+    {
+      "nombre": "Campo 6",
+      "tipo": "checkbox",
+      "obligatorio": true,
+      "opciones": [
+        "casilla 1",
+        "casilla 2",
+        "casilla 3"
+      ],
+      "multiple": true
+    },
+    {
+      "nombre": "correo",
+      "tipo": "email",
+      "obligatorio": false
+    }
+  ],
+  "descripcion": "",
+  "titulo": "descripcion"
+}

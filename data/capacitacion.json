@@ -1,0 +1,50 @@
+[
+    {
+        "Nombre": "gerson ruano",
+        "Correo": "toge618@gmail.com",
+        "Nip": "23423",
+        "Teléfono": "23423423",
+        "Área de interés": "Informática",
+        "Nivel de conocimiento": [
+            "Intermedio"
+        ],
+        "Asistirá a la capacitación": "No",
+        "Comentarios adicionales": ""
+    },
+    {
+        "Nombre": "gerson",
+        "Correo": "toge6138@gmail.com",
+        "Nip": "23423",
+        "Teléfono": "12312122",
+        "Área de interés": "Finanzas",
+        "Nivel de conocimiento": [
+            "Básico"
+        ],
+        "Asistirá a la capacitación": "No",
+        "Comentarios adicionales": ""
+    },
+    {
+        "Nombre": "gerson",
+        "Correo": "toge6118@gmail.com",
+        "Nip": "23423",
+        "Teléfono": "12312122",
+        "Área de interés": "Finanzas",
+        "Nivel de conocimiento": [
+            "Básico"
+        ],
+        "Asistirá a la capacitación": "No",
+        "Comentarios adicionales": ""
+    },
+    {
+        "Nombre": "gerson",
+        "Correo": "toge6128@gmail.com",
+        "Nip": "23413",
+        "Teléfono": "12131232",
+        "Área de interés": "Recursos Humanos",
+        "Nivel de conocimiento": [
+            "ninguno"
+        ],
+        "Asistirá a la capacitación": "Si",
+        "Comentarios adicionales": ""
+    }
+]

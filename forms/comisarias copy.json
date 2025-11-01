@@ -1,14 +1,49 @@
 {
-  "titulo": "Registro de Capacitación para Comisarias",
-  "identificador_unico": "Nip",
-  "activo": true,
-  "descripcion": "Capacitacion de las encuestas.",
+  "activo": false,
   "campos": [
-    {"nombre": "Nombre", "tipo": "text", "obligatorio": true},
-    {"nombre": "Nip", "tipo": "number"},
-    {"nombre": "Teléfono", "tipo": "number"},
-    {"nombre": "Rol", "tipo": "select", "opciones": ["Operador", "Jefe de servicios", "Analista"], "obligatorio": true},
-    {"nombre": "Puesto", "tipo": "select", "opciones": ["Agente", "Subinspector", "Inspector"], "obligatorio": true},
-    {"nombre": "Tiene usuario RAP", "tipo": "checkbox", "opciones": ["Sí", "No"]}
-  ]
+    {
+      "nombre": "Nombre",
+      "obligatorio": true,
+      "tipo": "text"
+    },
+    {
+      "nombre": "Nip",
+      "tipo": "number"
+    },
+    {
+      "nombre": "Teléfono",
+      "tipo": "number"
+    },
+    {
+      "nombre": "Rol",
+      "obligatorio": true,
+      "opciones": [
+        "Operador",
+        "Jefe de servicios",
+        "Analista"
+      ],
+      "tipo": "select"
+    },
+    {
+      "nombre": "Puesto",
+      "obligatorio": true,
+      "opciones": [
+        "Agente",
+        "Subinspector",
+        "Inspector"
+      ],
+      "tipo": "select"
+    },
+    {
+      "nombre": "Tiene usuario RAP",
+      "opciones": [
+        "Sí",
+        "No"
+      ],
+      "tipo": "checkbox"
+    }
+  ],
+  "descripcion": "Capacitacion de las encuestas.",
+  "identificador_unico": "Nip",
+  "titulo": "Registro de Capacitación para Comisarias"
 }

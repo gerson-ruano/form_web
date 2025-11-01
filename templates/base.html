@@ -4,19 +4,27 @@
     <meta charset="UTF-8">
     <title>{{ titulo if titulo else "Sistema de Formularios PNC" }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind.min.css') }}">
+    <!--link rel="shortcut icon" href="static/images/icon.ico" type="image/x-icon"-->
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/icon.ico') }}" type="image/x-icon">
 </head>
 <body class="min-h-screen flex flex-col bg-custom-gradient">
     <style>
         .bg-custom-gradient {
-        background: #1c92d2;  /* fallback for old browsers */
-        background: -webkit-linear-gradient(to right, #f2fcfe, #1c92d2);  /* Chrome 10-25, Safari 5.1-6 */
-        background: linear-gradient(to right, #f2fcfe, #1c92d2); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+        background: #E0EAFC;  /* fallback for old browsers */
+        background: -webkit-linear-gradient(to right, #CFDEF3, #E0EAFC);  /* Chrome 10-25, Safari 5.1-6 */
+        background: linear-gradient(to right, #CFDEF3, #E0EAFC); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
         }
     </style>
     <!-- Navbar -->
     <nav class="bg-blue-600 text-white p-4">
-        <div class="ml-4">
-            <h1 class="font-bold text-xl">Sistema de Formularios PNC</h1>
+        <div class="max-w-4xl mx-auto flex justify-between items-center"></div>
+            <div>
+                <!--img src="static/images/form4.png" align="left" style="max-width:25%;width:40px;height:auto;"-->
+                <img src="{{ url_for('static', filename='images/form4.png') }}" alt="Logo Sistema Formularios" class="mr-3" align="left" style="max-width:25%;width:40px;height:auto;">
+                <a href="/" class="font-bold text-xl hover:bg-blue-700 px-3 py-2 rounded">Sistema de Formularios PNC</a>
+                <a href="/admin/formularios" class="hover:bg-blue-700 px-3 py-2 rounded">Administrar</a>
+                <a href="/admin/qr-generator" class="hover:bg-blue-700 hover:border-4 py-2 rounded">Generar QR</a>
+            </div>
         </div>
     </nav>
 

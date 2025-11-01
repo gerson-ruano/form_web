@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+{% block contenido %}
+
+<div class="max-w-6xl mx-auto bg-white p-8 mt-2 shadow-md rounded-xl">
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold">Generador de Códigos QR</h1>
+            <p class="text-gray-600 mt-2">Genera códigos QR para compartir tus formularios fácilmente</p>
+        </div>
+    </div>
+
+    <!-- Selector de formulario -->
+    <div class="bg-gray-50 p-6 rounded-lg mb-6">
+        <h2 class="text-xl font-semibold mb-4">Seleccionar Formulario</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for form in formularios %}
+            <div class="border border-gray-200 rounded-lg p-4 bg-white hover:shadow-md hover:bg-blue-500 hover:text-black transition-shadow cursor-pointer"
+                 onclick="seleccionarFormulario('{{ form.nombre }}', '{{ form.titulo }}')">
+                <h3 class="font-semibold text-lg mb-2">{{ form.titulo }}</h3>
+                <p class="text-gray-600 text-sm mb-2">{{ form.descripcion or "Sin descripción" }}</p>
+                <div class="flex justify-between items-center">
+                    <span class="px-2 py-1 text-xs rounded-full {% if form.activo %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                        {{ 'Activo' if form.activo else 'Inactivo' }}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Panel de generación de QR -->
+    <div id="panelQR" class="hidden bg-white border border-gray-200 rounded-lg p-6">
+        <h2 class="text-xl font-semibold mb-4" id="tituloFormularioSeleccionado">Generar Código QR</h2>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Información del formulario -->
+            <div>
+                <h3 class="font-semibold mb-3">Información del Formulario</h3>
+                <div class="space-y-2">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">URL del Formulario:</label>
+                        <div class="flex mt-1">
+                            <input type="text" id="urlFormulario" readonly 
+                                   class="flex-1 px-3 py-2 border border-gray-300 rounded-l text-sm bg-gray-50">
+                            <button onclick="copiarURL()" class="bg-blue-500 text-white px-3 py-2 rounded-r hover:bg-blue-600 text-sm">
+                                Copiar
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Tamaño del QR:</label>
+                        <select id="tamanoQR" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded text-sm">
+                            <option value="200">Pequeño (200x200)</option>
+                            <option value="300" selected>Mediano (300x300)</option>
+                            <option value="400">Grande (400x400)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mt-4 space-y-2">
+                    <button onclick="generarQR()" class="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        Generar Código QR
+                    </button>
+                    <button onclick="descargarQR()" id="btnDescargar" class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 hidden flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        Descargar QR
+                    </button>
+                </div>
+            </div>
+
+            <!-- Vista previa del QR -->
+            <div>
+                <h3 class="font-semibold mb-3">Vista Previa del Código QR</h3>
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 flex items-center justify-center min-h-64">
+                    <div id="vistaPreviaQR" class="text-center">
+                        <svg class="w-16 h-16 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        <p class="text-gray-500">Selecciona un formulario y genera el código QR</p>
+                    </div>
+                </div>
+                
+                <div class="mt-4 text-center">
+                    <p class="text-sm text-gray-600" id="textoPruebaQR">
+                        Escanea el código QR con tu teléfono para acceder al formulario
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instrucciones -->
+    <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <h3 class="font-semibold text-blue-800 mb-3">¿Cómo usar los códigos QR?</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div class="flex items-start">
+                <div class="bg-blue-100 text-blue-800 rounded-full p-2 mr-3">
+                    <span class="font-bold">1</span>
+                </div>
+                <p class="text-blue-700">Selecciona un formulario de la lista</p>
+            </div>
+            <div class="flex items-start">
+                <div class="bg-blue-100 text-blue-800 rounded-full p-2 mr-3">
+                    <span class="font-bold">2</span>
+                </div>
+                <p class="text-blue-700">Genera el código QR con el botón</p>
+            </div>
+            <div class="flex items-start">
+                <div class="bg-blue-100 text-blue-800 rounded-full p-2 mr-3">
+                    <span class="font-bold">3</span>
+                </div>
+                <p class="text-blue-700">Descarga e imprime el QR para compartir</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de notificación -->
+<div id="modalNotificacionQR" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg max-w-sm w-full mx-auto p-6">
+        <div class="text-center">
+            <div class="w-12 h-12 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <h3 class="text-lg font-semibold mb-2" id="notificacionTituloQR">Éxito</h3>
+            <p class="text-gray-600" id="notificacionMensajeQR">URL copiada al portapapeles</p>
+            <button onclick="cerrarNotificacionQR()" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                Aceptar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let formularioSeleccionado = null;
+
+// Seleccionar formulario
+function seleccionarFormulario(nombre, titulo) {
+    formularioSeleccionado = nombre;
+    
+    // Actualizar UI
+    document.getElementById('tituloFormularioSeleccionado').textContent = `Generar QR: ${titulo}`;
+    document.getElementById('urlFormulario').value = `${window.location.origin}/formulario/${nombre}`;
+    document.getElementById('panelQR').classList.remove('hidden');
+    
+    // Resetear vista previa
+    document.getElementById('vistaPreviaQR').innerHTML = `
+        <svg class="w-16 h-16 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        <p class="text-gray-500">Haz clic en "Generar Código QR"</p>
+    `;
+    document.getElementById('btnDescargar').classList.add('hidden');
+    
+    // Scroll suave al panel
+    document.getElementById('panelQR').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Generar QR
+async function generarQR() {
+    if (!formularioSeleccionado) return;
+    
+    try {
+        const vistaPrevia = document.getElementById('vistaPreviaQR');
+        vistaPrevia.innerHTML = `
+            <div class="flex items-center justify-center">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                <span class="ml-2 text-gray-600">Generando QR...</span>
+            </div>
+        `;
+        
+        const response = await fetch(`/admin/generar-qr-base64/${formularioSeleccionado}`);
+        const result = await response.json();
+        
+        if (result.success) {
+            vistaPrevia.innerHTML = `
+                <img src="${result.qr_image}" alt="Código QR" class="mx-auto border rounded-lg shadow-sm" id="imagenQR">
+                <p class="text-sm text-gray-600 mt-2">Código QR generado exitosamente</p>
+            `;
+            document.getElementById('btnDescargar').classList.remove('hidden');
+        } else {
+            throw new Error(result.error);
+        }
+    } catch (error) {
+        document.getElementById('vistaPreviaQR').innerHTML = `
+            <div class="text-red-500">
+                <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p>Error al generar QR: ${error.message}</p>
+            </div>
+        `;
+    }
+}
+
+// Descargar QR
+function descargarQR() {
+    if (!formularioSeleccionado) return;
+    
+    const link = document.createElement('a');
+    link.href = `/admin/generar-qr/${formularioSeleccionado}`;
+    link.download = `qr_${formularioSeleccionado}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// Copiar URL al portapapeles
+async function copiarURL() {
+    const urlInput = document.getElementById('urlFormulario');
+    try {
+        await navigator.clipboard.writeText(urlInput.value);
+        mostrarNotificacionQR('Éxito', 'URL copiada al portapapeles');
+    } catch (err) {
+        // Fallback para navegadores antiguos
+        urlInput.select();
+        document.execCommand('copy');
+        mostrarNotificacionQR('Éxito', 'URL copiada al portapapeles');
+    }
+}
+
+// Notificaciones
+function mostrarNotificacionQR(titulo, mensaje) {
+    document.getElementById('notificacionTituloQR').textContent = titulo;
+    document.getElementById('notificacionMensajeQR').textContent = mensaje;
+    document.getElementById('modalNotificacionQR').classList.remove('hidden');
+    document.getElementById('modalNotificacionQR').classList.add('flex');
+}
+
+function cerrarNotificacionQR() {
+    document.getElementById('modalNotificacionQR').classList.add('hidden');
+    document.getElementById('modalNotificacionQR').classList.remove('flex');
+}
+
+// Cerrar modal al hacer click fuera
+document.getElementById('modalNotificacionQR').addEventListener('click', function(e) {
+    if (e.target === this) {
+        cerrarNotificacionQR();
+    }
+});
+</script>
+
+<style>
+.cursor-pointer {
+    cursor: pointer;
+}
+</style>
+
+{% endblock %}
