@@ -9,6 +9,8 @@ from utils.validators import validar_input
 app = Flask(__name__)
 app.secret_key = "secreto_seguro"  # Para flash messages
 
+os.makedirs("data", exist_ok=True)
+
 FORMS_DIR = "forms"
 
 # -----------------------
