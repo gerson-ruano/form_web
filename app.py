@@ -1,26 +1,95 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_file, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_file, send_from_directory, session
+from functools import wraps
 import json, os
 import qrcode
 from io import BytesIO
 import base64
 from utils.storage import guardar_registro, usuario_existe
 from utils.validators import validar_input
+from config import DevelopmentConfig, ProductionConfig
+
+# Detectar entorno
+env = os.getenv("FLASK_ENV", "development")
 
 app = Flask(__name__)
-app.secret_key = "secreto_seguro"  # Para flash messages
 
-os.makedirs("data", exist_ok=True)
+# Cargar la configuración correspondiente
+if env == "production":
+    app.config.from_object(ProductionConfig)
+else:
+    app.config.from_object(DevelopmentConfig)
 
-FORMS_DIR = "forms"
-DATA_DIR = "data"
+# Crear carpetas si no existen
+os.makedirs(app.config["DATA_DIR"], exist_ok=True)
+os.makedirs(app.config["FORMS_DIR"], exist_ok=True)
+
+FORMS_DIR = app.config["FORMS_DIR"]
+DATA_DIR = app.config["DATA_DIR"]
+
+# Variables útiles
+ADMIN_USER = app.config["ADMIN_USER"]
+ADMIN_PASS = app.config["ADMIN_PASS"]
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get("logged_in"):
+            flash("Debes iniciar sesión para acceder al panel.", "error")
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return decorated_function
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        usuario = request.form["usuario"]
+        password = request.form["password"]
+
+        if usuario == ADMIN_USER and password == ADMIN_PASS:
+            session["logged_in"] = True
+            flash("Bienvenido al panel administrativo.", "success")
+            return redirect(url_for("index"))
+        else:
+            flash("Usuario o contraseña incorrectos.", "error")
+
+    return render_template("login.html")
+
+
+@app.route("/logout")
+def logout():
+    session.pop("logged_in", None)
+    flash("Sesión cerrada correctamente.", "info")
+    return redirect(url_for("login"))
+
+@app.route("/admin")
+@login_required
+def admin_dashboard():
+    return render_template("admin_dashboard.html")
+
+
+@app.route("/admin/registros")
+@login_required
+def admin_registros():
+    archivos = []
+    data_dir = "data"
+    if os.path.exists(data_dir):
+        for archivo in os.listdir(data_dir):
+            if archivo.endswith(".csv"):
+                tamaño = os.path.getsize(os.path.join(data_dir, archivo)) / 1024
+                archivos.append({
+                    "nombre": archivo,
+                    "tamaño": f"{tamaño:.2f} KB"
+                })
+    return render_template("registros.html", archivos=archivos)
+
 
 # -----------------------
 # Página principal: listar formularios activos
 # -----------------------
 @app.route("/")
+@login_required
 def index():
     formularios = []
-
     if os.path.exists(FORMS_DIR):
         for archivo in os.listdir(FORMS_DIR):
             if archivo.endswith(".json"):
@@ -43,6 +112,7 @@ def index():
 
 @app.route("/formulario/<nombre>", methods=["GET", "POST"])
 def formulario(nombre):
+    session.pop('_flashes', None)  # Limpia cualquier mensaje previo
     ruta = os.path.join(FORMS_DIR, f"{nombre}.json")
     if not os.path.exists(ruta):
         return f"No se encontró el formulario '{nombre}'.", 404
@@ -103,6 +173,7 @@ def formulario(nombre):
 # Formulario dinámico
 # -----------------------
 @app.route("/admin/formularios")
+@login_required
 def admin_formularios():
     """Lista todos los formularios para administración"""
     formularios = []
@@ -133,6 +204,7 @@ def admin_formularios():
     return render_template("admin_formularios.html", formularios=formularios)
 
 @app.route("/admin/formulario/<nombre>", methods=["GET", "POST"])
+@login_required
 def editar_formulario(nombre):
     """Editar un formulario específico"""
     ruta = os.path.join(FORMS_DIR, f"{nombre}.json")
@@ -167,6 +239,7 @@ def editar_formulario(nombre):
         return jsonify({"success": False, "error": f"Error interno del servidor: {str(e)}"}), 500
 
 @app.route("/admin/formulario/nuevo", methods=["POST"])
+@login_required
 def nuevo_formulario():
     """Crear un nuevo formulario"""
     try:
@@ -235,6 +308,7 @@ def nuevo_formulario():
         return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route("/admin/formulario/<nombre>/eliminar", methods=["POST"])
+@login_required
 def eliminar_formulario(nombre):
     """Eliminar un formulario"""
     try:
@@ -264,6 +338,7 @@ def verificar_archivo_formulario(ruta):
         return False, f"Error al leer archivo: {str(e)}"
     
 @app.route("/admin/qr-generator")
+@login_required
 def qr_generator():
     """Página para generar códigos QR de formularios"""
     formularios = []
@@ -288,6 +363,7 @@ def qr_generator():
     return render_template("qr_generator.html", formularios=formularios)
 
 @app.route("/admin/generar-qr/<nombre_formulario>")
+@login_required
 def generar_qr(nombre_formulario):
     """Genera y devuelve un código QR para un formulario específico"""
     try:
@@ -319,6 +395,7 @@ def generar_qr(nombre_formulario):
         return f"Error al generar QR: {str(e)}", 500
 
 @app.route("/admin/generar-qr-base64/<nombre_formulario>")
+@login_required
 def generar_qr_base64(nombre_formulario):
     """Genera un código QR en base64 para mostrar directamente en HTML"""
     try:
@@ -353,23 +430,10 @@ def generar_qr_base64(nombre_formulario):
         
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
-    
-@app.route("/admin/registros")
-def registros():
-    archivos = []
-    if os.path.exists(DATA_DIR):
-        for archivo in os.listdir(DATA_DIR):
-            if archivo.endswith(".csv"):
-                ruta = os.path.join(DATA_DIR, archivo)
-                tamaño = os.path.getsize(ruta) / 1024  # KB
-                archivos.append({
-                    "nombre": archivo,
-                    "tamaño": f"{tamaño:.2f} KB"
-                })
-    return render_template("/registros.html", archivos=archivos)
 
 
 @app.route("/descargar/<nombre>")
+@login_required
 def descargar(nombre):
     return send_from_directory(DATA_DIR, nombre, as_attachment=True)
     

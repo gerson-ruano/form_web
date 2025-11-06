@@ -16,10 +16,9 @@
         }
     </style>
     <!-- Navbar -->
-    <nav class="bg-blue-600 text-white p-4">
+    <!--nav class="bg-blue-600 text-white p-4">
         <div class="max-w-4xl mx-auto flex justify-between items-center"></div>
             <div>
-                <!--img src="static/images/form4.png" align="left" style="max-width:25%;width:40px;height:auto;"-->
                 <img src="{{ url_for('static', filename='images/form4.png') }}" alt="Logo Sistema Formularios" class="mr-3" align="left" style="max-width:25%;width:40px;height:auto;">
                 <a href="/" class="font-bold text-xl hover:bg-blue-700 px-3 py-2 rounded">Sistema de Formularios PNC</a>
                 <a href="/admin/formularios" class="hover:bg-blue-700 px-3 py-2 rounded">Administrar</a>
@@ -27,7 +26,9 @@
                 <a href="/admin/registros" class="hover:bg-blue-700 hover:border-4 px-3 py-2 rounded">Registros</a>
             </div>
         </div>
-    </nav>
+    </nav-->
+
+    {% include "_navbar.html" %}
 
     <!-- Contenido -->
     <main class="flex-grow max-w-4xl mx-auto p-6">

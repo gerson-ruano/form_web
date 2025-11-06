@@ -1,0 +1,18 @@
+<nav class="bg-blue-600 text-white px-4 py-2 flex items-center justify-between">
+  <div class="flex items-center space-x-4">
+    <img src="{{ url_for('static', filename='images/form4.png') }}" alt="Logo Sistema Formularios"
+         class="mr-3" style="width:40px;height:auto;">
+    <a href="/" class="font-bold text-lg hover:bg-blue-700 px-3 py-1 rounded">
+      Sistema de Formularios PNC
+    </a>
+  </div>
+
+  {% if session.get('logged_in') %}
+  <div class="space-x-4">
+      <a href="/admin/formularios" class="hover:bg-blue-700 px-3 py-2 rounded">Administrar</a>
+      <a href="/admin/qr-generator" class="hover:bg-blue-700 px-3 py-2 rounded">Generar QR</a>
+      <a href="/admin/registros" class="hover:bg-blue-700 px-3 py-2 rounded">Registros</a>
+      <a href="/logout" class="bg-red-500 hover:bg-red-600 px-3 py-2 rounded">Salir</a>
+  </div>
+  {% endif %}
+</nav>

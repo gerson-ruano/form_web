@@ -46,5 +46,17 @@
         ],
         "Asistirá a la capacitación": "Si",
         "Comentarios adicionales": ""
+    },
+    {
+        "Nombre": "otro ingreso",
+        "Correo": "gerson@gmail.com",
+        "Nip": "32423",
+        "Teléfono": "23423423",
+        "Área de interés": "Finanzas",
+        "Nivel de conocimiento": [
+            "ninguno"
+        ],
+        "Asistirá a la capacitación": "Si",
+        "Comentarios adicionales": "es una prueba"
     }
 ]
