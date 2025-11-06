@@ -1,5 +1,5 @@
 {
-  "activo": true,
+  "activo": false,
   "campos": [
     {
       "nombre": "nip",
@@ -38,20 +38,20 @@
       "tipo": "select"
     },
     {
+      "multiple": true,
       "nombre": "Campo 6",
-      "tipo": "checkbox",
       "obligatorio": true,
       "opciones": [
         "casilla 1",
         "casilla 2",
         "casilla 3"
       ],
-      "multiple": true
+      "tipo": "checkbox"
     },
     {
       "nombre": "correo",
-      "tipo": "email",
-      "obligatorio": false
+      "obligatorio": false,
+      "tipo": "email"
     }
   ],
   "descripcion": "",

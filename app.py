@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_file
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_file, send_from_directory
 import json, os
 import qrcode
 from io import BytesIO
@@ -12,6 +12,7 @@ app.secret_key = "secreto_seguro"  # Para flash messages
 os.makedirs("data", exist_ok=True)
 
 FORMS_DIR = "forms"
+DATA_DIR = "data"
 
 # -----------------------
 # Página principal: listar formularios activos
@@ -352,6 +353,25 @@ def generar_qr_base64(nombre_formulario):
         
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
+    
+@app.route("/admin/registros")
+def registros():
+    archivos = []
+    if os.path.exists(DATA_DIR):
+        for archivo in os.listdir(DATA_DIR):
+            if archivo.endswith(".csv"):
+                ruta = os.path.join(DATA_DIR, archivo)
+                tamaño = os.path.getsize(ruta) / 1024  # KB
+                archivos.append({
+                    "nombre": archivo,
+                    "tamaño": f"{tamaño:.2f} KB"
+                })
+    return render_template("/registros.html", archivos=archivos)
+
+
+@app.route("/descargar/<nombre>")
+def descargar(nombre):
+    return send_from_directory(DATA_DIR, nombre, as_attachment=True)
     
 
 # -----------------------
