@@ -121,7 +121,9 @@ def formulario(nombre):
         config = json.load(f)
 
     if not config.get("activo", True):
-        return "Este formulario no está disponible en este momento.", 403
+        #return "Este formulario no está disponible en este momento.", 403
+        return render_template("components/form_inactivo.html", titulo=config.get("titulo", nombre))
+     
 
     datos = {}  # Para mantener los valores ingresados
     errores_por_campo = {}  # Nuevo: diccionario para errores por campo
@@ -164,7 +166,7 @@ def formulario(nombre):
 
         # Guardar registro
         guardar_registro(nombre, datos)
-        return render_template("success.html", titulo=config["titulo"], form_name=nombre)
+        return render_template("components/success.html", titulo=config["titulo"], form_name=nombre)
 
     # GET request
     return render_template("form.html", config=config, datos={}, errores={})
