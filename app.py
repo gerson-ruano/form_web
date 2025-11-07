@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_file, send_from_directory, session
+from flask import Flask, config, render_template, request, redirect, url_for, flash, jsonify, send_file, send_from_directory, session
 from functools import wraps
 import json, os
 import qrcode
@@ -438,6 +438,22 @@ def generar_qr_base64(nombre_formulario):
 @login_required
 def descargar(nombre):
     return send_from_directory(DATA_DIR, nombre, as_attachment=True)
+
+@app.route("/eliminar/<nombre>")
+@login_required
+def eliminar(nombre):
+    ruta = os.path.join(DATA_DIR, nombre)
+    if os.path.exists(ruta):
+        os.remove(ruta)
+        json_ruta = os.path.join(DATA_DIR, f"{os.path.splitext(nombre)[0]}.json")
+        if os.path.exists(json_ruta):
+            os.remove(json_ruta)
+            #flash(f"El archivo JSON asociado a '{nombre}' ha sido eliminado.", "success")
+        return render_template("components/eliminar.html", nombre=nombre)
+    else:
+        flash(f"El archivo '{nombre}' no se encontró.", "error")
+    return redirect(url_for("admin_registros"))
+
     
 
 # -----------------------

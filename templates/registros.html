@@ -16,7 +16,8 @@
                 <tr class="bg-gray-200">
                     <th class="p-2 text-left">Archivo</th>
                     <th class="p-2 text-center">Tamaño</th>
-                    <th class="p-2 text-center">Acción</th>
+                    <th class="p-2 text-center"></th>
+                    <th class="p-2 text-left">Acción</th>
                 </tr>
             </thead>
             <tbody>
@@ -26,8 +27,14 @@
                     <td class="p-2 text-center">{{ archivo.tamaño }}</td>
                     <td class="p-2 text-center">
                         <a href="{{ url_for('descargar', nombre=archivo.nombre) }}"
-                           class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">
+                           class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 mb-2 rounded">
                            Descargar
+                        </a>
+                    </td>
+                    <td class="p-2 text-center">
+                        <a href="{{ url_for('eliminar', nombre=archivo.nombre) }}"
+                           class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">
+                           Eliminar
                         </a>
                     </td>
                 </tr>
