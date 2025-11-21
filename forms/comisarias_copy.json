@@ -12,7 +12,8 @@
     },
     {
       "nombre": "Teléfono",
-      "tipo": "number"
+      "tipo": "number",
+      "longitud": "3"
     },
     {
       "nombre": "Rol",

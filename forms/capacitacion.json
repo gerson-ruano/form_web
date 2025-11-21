@@ -14,7 +14,7 @@
       "tipo": "email"
     },
     {
-      "longitud": 5,
+      "longitud": 0,
       "nombre": "Nip",
       "obligatorio": true,
       "placeholder": "Ejemplo: 34345",

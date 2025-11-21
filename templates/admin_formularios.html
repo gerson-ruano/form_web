@@ -400,6 +400,15 @@ function renderizarCampos() {
                         <input type="text" value="${campo.placeholder || ''}" onchange="actualizarCampo(${campoCounter}, 'placeholder', this.value)" 
                                class="w-full px-2 py-1 border border-gray-300 rounded text-sm" placeholder="Texto de ejemplo">
                     </div>
+                    ${campo.tipo === 'number' ? `
+                <div>
+                    <label class="block text-xs font-medium mb-1 text-gray-700">Longitud máxima *</label>
+                    <input type="number" min="1" value="${campo.longitud || ''}"
+                        onchange="actualizarCampo(${campoCounter}, 'longitud', Number(this.value))"
+                        class="w-full px-2 py-1 border border-gray-300 rounded text-sm" 
+                        placeholder="Ej: 8">
+                </div>
+                ` : ''}
                     ${campo.tipo === 'select' || campo.tipo === 'checkbox' || campo.tipo === 'radio' ? `
                     <div class="md:col-span-2">
                         <label class="block text-xs font-medium mb-1 text-gray-700">Opciones (una por línea) *</label>
@@ -437,6 +446,7 @@ function actualizarCampo(id, propiedad, valor) {
         if (valor !== 'checkbox') {
             delete campo.multiple;
         }
+        renderizarEditorVisual();
     }
     
     // Actualizar visualización del nombre en el header del campo

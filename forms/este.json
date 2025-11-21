@@ -1,0 +1,33 @@
+{
+  "activo": true,
+  "campos": [
+    {
+      "nombre": "Campo 1",
+      "obligatorio": true,
+      "tipo": "number"
+    },
+    {
+      "nombre": "Campo 2",
+      "obligatorio": false,
+      "tipo": "select"
+    },
+    {
+      "nombre": "Campo 3",
+      "obligatorio": false,
+      "tipo": "select"
+    },
+    {
+      "nombre": "Campo 4",
+      "obligatorio": false,
+      "tipo": "select"
+    },
+    {
+      "longitud": 0,
+      "nombre": "Campo 5",
+      "obligatorio": false,
+      "tipo": "number"
+    }
+  ],
+  "descripcion": "",
+  "titulo": "este"
+}

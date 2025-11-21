@@ -1,6 +1,23 @@
 {
-  "titulo": "DSFSF",
   "activo": true,
+  "campos": [
+    {
+      "longitud": 4,
+      "nombre": "Campo 1",
+      "obligatorio": true,
+      "tipo": "checkbox"
+    },
+    {
+      "nombre": "Campo 2",
+      "tipo": "select",
+      "obligatorio": false
+    },
+    {
+      "nombre": "Campo 3",
+      "tipo": "text",
+      "obligatorio": false
+    }
+  ],
   "descripcion": "",
-  "campos": []
+  "titulo": "DSFSF"
 }
